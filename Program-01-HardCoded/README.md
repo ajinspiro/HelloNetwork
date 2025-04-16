@@ -8,6 +8,7 @@ sequenceDiagram
 
 Client<<->>Server:TCP conn. established (using high level TCP API)
 Client->>Server:Full content of file
+Client<<->>Server:TCP conn. closed
 ```
 
 This program has the following limitations.
