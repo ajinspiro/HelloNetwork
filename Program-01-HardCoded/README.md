@@ -12,7 +12,7 @@ Client<<->>Server:TCP conn. closed
 ```
 
 This program has the following limitations.
-* Payload details are hardcoded: Can't choose a different file to send. To do so, we need to recompile both client and server.
-* No chunks: Entire file is sent in one go. Not practical for sending large files. Because a drop in a packet can cause the entire file to be retransmitted.
-* No pause: No ability to pause and resume the transfer.
-* Not secure: TCP does not encrypt traffic. Anyone intercepting the traffic can see the contents of the file.
+* **Payload details are hardcoded**: Can't choose a different file to send. To do so, we need to recompile both client and server.
+* **No chunks**: Entire file is sent in one go. Not practical for sending large files. Because a drop in a packet can cause the entire file to be retransmitted.
+* **No pause**: No ability to pause and resume the transfer.
+* **Not secure**: TCP does not encrypt traffic. Anyone intercepting the traffic can see the contents of the file.
