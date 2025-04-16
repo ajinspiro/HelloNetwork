@@ -5,13 +5,6 @@ sequenceDiagram
     participant Client as 📱 Client
     participant Server as 🖥️ Server
 
-Client->Server:Solid line without arrow
-Client-->Server:Dotted line without arrow
-Client->>Server:Solid line with arrowhead
-Client-->>Server:Dotted line with arrowhead
-Client-xServer:Solid line with a cross at the end
-Client--xServer:Dotted line with a cross at the end.
-Client-)Server:Solid line with an open arrow at the end (async)
-Client--)Server:Dotted line with a open arrow at the end (async)
-
+Client<<->>Server:TCP conn. established (using high level TCP API)
+Client->>Server:Full content of file
 ```
