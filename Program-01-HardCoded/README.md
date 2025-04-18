@@ -11,6 +11,9 @@ Client<<->>Server:TCP conn. established (using high level TCP API)
 Client->>Server:Full content of file
 Client<<->>Server:TCP conn. closed
 ```
+## Overview of the Program
+This program illustrates the use of TCP networking APIs (for e.g., TcpClient and TcpListener in C#, net.Socket and net.Server in Node.js) by implementing a file transfer mechanism.
+
 ## Current Limitations of the Program
 * **Hardcoded payload**: The file to be sent is fixed in the code. Changing the file requires recompiling both the client and server.
 
