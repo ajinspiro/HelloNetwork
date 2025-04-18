@@ -17,7 +17,7 @@ This program illustrates the use of TCP networking APIs (for e.g., TcpClient and
 ## Current Limitations of the Program
 * **Hardcoded payload**: The file to be sent is fixed in the code. Changing the file requires recompiling both the client and server.
 
-* **No support for chunked transfer**: The entire file is sent in a single operation, which is inefficient for large files. A single dropped packet can require resending the whole file.
+* **No support for chunked transfer**: The entire file is loaded into memory and sent in one go, which is inefficient for large files. It increases memory usage and any packet loss may require retransmitting the entire file.
 
 * **No pause/resume functionality**: The transfer cannot be paused or resumed once started. Also, the transfer cannot recover from any error.
 
