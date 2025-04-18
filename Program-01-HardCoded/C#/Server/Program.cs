@@ -16,12 +16,13 @@ static async Task ProcessClient(TcpClient connectedClient)
 {
     try
     {
-        NetworkStream channel = connectedClient.GetStream();
-        BinaryReader channelReader = new(channel);
+        using NetworkStream channel = connectedClient.GetStream();
+        using BinaryReader channelReader = new(channel);
         byte[] imageBytes = channelReader.ReadBytes(90674); // Limitation: server needs to know the size of the transferred file in advance.
         using FileStream imageStream = new("IMAGE.jpg", FileMode.Create, FileAccess.Write);
         await imageStream.WriteAsync(imageBytes);
         Console.WriteLine("File received.");
+        // Expects the connection to be closed by client
     }
     catch (Exception ex)
     {

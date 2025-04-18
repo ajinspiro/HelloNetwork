@@ -10,6 +10,7 @@ BinaryWriter channelWriter = new(channel);
 byte[] imageBytes = GetImageAsBytes();
 channelWriter.Write(imageBytes);
 Console.WriteLine("Sending file IMAGE.jpg complete.");
+tcpClient.Dispose(); // close the connection
 
 static byte[] GetImageAsBytes()
 {
