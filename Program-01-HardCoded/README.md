@@ -1,18 +1,21 @@
 # Program 01 - HardCoded
-This program introduces the reader to network programming. We will be sending a file from a client to a server. We will keep things simple and bare minimum, for this we will use high level TCP APIs. Details of the file will be hard coded into client and server for simplicity. This means the programs can transfer that 1 file only.
+This program serves as a "Hello, World" to network programming. It demonstrates how to transfer a file from a client to a server using high-level TCP APIs, keeping the implementation simple and minimal. For the sake of simplicity, file details are hardcoded into both the client and server, meaning the program is designed to transfer only that specific file.
+
 
 ```mermaid
 sequenceDiagram
-    participant Client as 📱 Client
-    participant Server as 🖥️ Server
+    participant Client
+    participant Server
 
 Client<<->>Server:TCP conn. established (using high level TCP API)
 Client->>Server:Full content of file
 Client<<->>Server:TCP conn. closed
 ```
+## Current Limitations of the Program
+* **Hardcoded payload**: The file to be sent is fixed in the code. Changing the file requires recompiling both the client and server.
 
-This program has the following limitations.
-* **Payload details are hardcoded**: Can't choose a different file to send. To do so, we need to recompile both client and server.
-* **No chunks**: Entire file is sent in one go. Not practical for sending large files. Because a drop in a packet can cause the entire file to be retransmitted.
-* **No pause**: No ability to pause and resume the transfer.
-* **Not secure**: TCP does not encrypt traffic. Anyone intercepting the traffic can see the contents of the file.
+* **No support for chunked transfer**: The entire file is sent in a single operation, which is inefficient for large files. A single dropped packet can require resending the whole file.
+
+* **No pause/resume functionality**: The transfer cannot be paused or resumed once started. Also, the transfer cannot recover from any error.
+
+* **Lack of security**: Data is sent as unencrypted bits over TCP, making it vulnerable to interception and inspection.
