@@ -6,11 +6,11 @@ await Task.Delay(1000); // Wait till the server starts.
 TcpClient tcpClient = new();
 await tcpClient.ConnectAsync("127.0.0.1", 11000);
 NetworkStream channel = tcpClient.GetStream();
-BinaryWriter channelWriter = new(channel);
+BinaryWriter channelWriter = new(channel); // Using BinaryWriter.Write for simplicity. This is old synchronous API. A modern alternative would be to call the low level Stream(here NetworkStream).ReadAsync directly.
 byte[] imageBytes = GetImageAsBytes();
 channelWriter.Write(imageBytes);
 Console.WriteLine("Sending file IMAGE.jpg complete.");
-tcpClient.Dispose(); // close the connection
+tcpClient.Dispose(); // Close the connection
 
 static byte[] GetImageAsBytes()
 {
@@ -24,4 +24,3 @@ static byte[] GetImageAsBytes()
     }
     return imageReader.ReadBytes((int)imageStream.Length);
 }
-
