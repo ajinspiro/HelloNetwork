@@ -15,6 +15,7 @@ const server = createServer((socket) => {
         await writeFile("IMAGE.jpg", imageBytesFull)
         buffers = []
         console.log("File received.")
+        socket.end() // Completing graceful shutdown.
     });
 
     socket.on('error', (err) => {
