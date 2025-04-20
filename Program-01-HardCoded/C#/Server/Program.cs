@@ -22,10 +22,10 @@ static async Task ProcessClient(TcpClient connectedClient)
         using FileStream imageStream = new("IMAGE.jpg", FileMode.Create, FileAccess.Write);
         await imageStream.WriteAsync(imageBytes);
         Console.WriteLine("File received.");
-        // Expects the connection to be closed by client
+        connectedClient.Dispose(); // Close the connection
     }
     catch (Exception ex)
     {
         Console.Error.WriteLine($"Processing failed. Exception: {ex.GetType().FullName}");
-    } 
+    }
 }
