@@ -26,7 +26,7 @@ sequenceDiagram
 Client<<->>Server:TCP conn. established
 Client->>Server:Length of metadata (4 byte integer)
 Client->>Server:Metadata (JSON)
-Server->>Client:1 (or 0 if not enough space)
+Server->>Client:1 (one-byte 1 representing "Proceed")
 Client->>Server:Chunk 1 (4KB) of file
 Client->>Server:Chunk 2 (4KB) of file
 Client<<->>Server:TCP conn. closed
