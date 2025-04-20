@@ -13,8 +13,8 @@ To support dynamic file metadata, the client serializes the file name and size i
 * Client sends a 4-byte integer indicating the length of the metadata JSON.
 * Client sends the metadata JSON containing the file name and size.
 * Server checks available disk space.
- * If sufficient: sends a 1-byte value 1 ("Proceed").
- * If insufficient: sends a 1-byte value 0 ("Denied") and closes the connection.
+    * If sufficient: sends a 1-byte value 1 ("Proceed").
+    * If insufficient: sends a 1-byte value 0 ("Denied") and closes the connection.
 * If the transfer is allowed, the client sends the file in 4KB chunks.
 * After all chunks are sent, the client closes the connection.
 
