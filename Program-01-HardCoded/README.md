@@ -10,7 +10,7 @@ sequenceDiagram
     participant Client
     participant Server
 
-Client<<->>Server:TCP conn. established (using high level TCP API)
+Client<<->>Server:TCP conn. established
 Client->>Server:Full content of file
 Client<<->>Server:TCP conn. closed
 ```
