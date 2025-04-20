@@ -24,22 +24,12 @@ sequenceDiagram
     participant Server
 
 Client<<->>Server:TCP conn. established
-Client->>Server:Metadata of file
-Server->>Client:Proceed (or Denied if not enough disk space)
+Client->>Server:Length of metadata (4 byte integer)
+Client->>Server:Metadata (JSON)
+Server->>Client:1 (or 0 if not enough space)
 Client->>Server:Chunk 1 (4KB) of file
-Server->>Client:Proceed
 Client->>Server:Chunk 2 (4KB) of file
-Server->>Client:Proceed
-Client->>Server:End of file
 Client<<->>Server:TCP conn. closed
-```
-```mermaid
-classDiagram
-    class PDU {
-        +int packet_type
-        +int payload_length
-        +char[] payload
-    }
 ```
 
 ### Current Limitations of the Program
