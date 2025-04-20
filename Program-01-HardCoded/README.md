@@ -11,7 +11,7 @@ sequenceDiagram
     participant Server
 
 Client<<->>Server:TCP conn. established
-Client->>Server:**Full content of file**
+Client->>Server: **Full content of file**
 Client<<->>Server:TCP conn. closed
 ```
 
