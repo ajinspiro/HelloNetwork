@@ -12,11 +12,11 @@ sequenceDiagram
 
 Client<<->>Server:TCP conn. established
 Client->>Server:Metadata of file
-Client<<-Server:Proceed (or Denied if not enough disk space)
+Server->>Client:Proceed (or Denied if not enough disk space)
 Client->>Server:Chunk 1 (4KB) of file
-Client<<-Server:Proceed
+Server->>Client:Proceed
 Client->>Server:Chunk 2 (4KB) of file
-Client<<-Server:Proceed
+Server->>Client:Proceed
 Client->>Server:End of file
 Client<<->>Server:TCP conn. closed
 ```
