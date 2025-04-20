@@ -1,5 +1,7 @@
 # Program 01 - HardCoded
-This program serves as a "Hello, World" to network programming. It demonstrates how to transfer a file from a client to a server using high-level TCP APIs, keeping the implementation simple and minimal. For the sake of simplicity, file details are hardcoded into both the client and server, meaning the program is designed to transfer only that specific file.
+This program serves as a foundational "Hello, World" example for network programming. It illustrates the basic mechanism of transferring a file from a client to a server using high-level TCP APIs, with a focus on simplicity and minimalism. For demonstration purposes, the file path and related metadata are hardcoded on both the client and server sides, restricting the transfer to a specific, predefined file.
+
+The server does not send any acknowledgements during the transfer. The entire file is transmitted in a single operation over the TCP connection, making retransmissions potentially expensive in case of packet loss. At this stage, there is no implementation of a Protocol Data Unit (PDU) or segmentation logic.
 
 
 ```mermaid
