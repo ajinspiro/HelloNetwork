@@ -47,16 +47,8 @@ if (ackMessage != 0 && ackMessage != 1)
     throw new Exception($"Server sent invalid acknowledgement: {ackMessage}");
 }
 Console.WriteLine($"ACKNOWLEDGEMENT RECEIVED: {ackMessage} - {(ackMessage == 1 ? "Proceed" : "Denied")}");
-////////////
-//using FileStream imageStream = new(payloadFilePath, FileMode.Open, FileAccess.Read);
-//BinaryReader imageReader = new(imageStream);
-//Console.WriteLine(imageStream.Length);
-//if (imageStream.Length > int.MaxValue)
-//{
-//    throw new Exception("Can't send files larger than 2GB (int.MaxValue) in this version.");
-//}
-//imageReader.ReadBytes((int)imageStream.Length);
-////////////
+
+Console.WriteLine("Sending the file in chunks.");
 
 tcpClient.Dispose(); // Close the connection
 
