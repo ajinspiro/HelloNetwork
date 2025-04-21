@@ -62,7 +62,21 @@ static async Task ProcessClient(TcpClient connectedClient)
         {
             return;
         }
-
+        byte[] buffer = new byte[4096]; // 4KB buffer
+        long totalBytesRead = 0;
+        int chunkCount = 1;
+        using FileStream payloadStream = new(payloadName, FileMode.Create);
+        do
+        {
+            bytesRead = await channel.ReadAsync(buffer, 0, 4096);
+            Console.Write($"Chunk {chunkCount++} received... ");
+            totalBytesRead += bytesRead;
+            await payloadStream.WriteAsync(buffer, 0, bytesRead);
+            await channel.WriteAsync(new byte[1] { 1 }); // Sending "Proceed" acknowledgement
+            Console.WriteLine("Acknowledgement complete.");
+        }
+        while (totalBytesRead < payloadSize);
+        Console.WriteLine("Transfer complete.");
         connectedClient.Dispose(); // Close the connection
     }
     catch (Exception ex)

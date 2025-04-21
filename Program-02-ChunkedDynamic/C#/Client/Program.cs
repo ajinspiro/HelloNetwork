@@ -38,8 +38,8 @@ if (bytesRead != 1)
 {
     throw new Exception("Incorrect amount of bytes read.");
 }
-int ackMessage = BitConverter.IsLittleEndian ? 
-    BitConverter.ToInt32([ackMessageByte[0], 0, 0, 0]) : 
+int ackMessage = BitConverter.IsLittleEndian ?
+    BitConverter.ToInt32([ackMessageByte[0], 0, 0, 0]) :
     BitConverter.ToInt32([0, 0, 0, ackMessageByte[0]]);
 
 if (ackMessage != 0 && ackMessage != 1)
@@ -47,9 +47,37 @@ if (ackMessage != 0 && ackMessage != 1)
     throw new Exception($"Server sent invalid acknowledgement: {ackMessage}");
 }
 Console.WriteLine($"ACKNOWLEDGEMENT RECEIVED: {ackMessage} - {(ackMessage == 1 ? "Proceed" : "Denied")}");
-
-Console.WriteLine("Sending the file in chunks.");
-
+if (ackMessage == 0)
+{
+    Console.Error.WriteLine($"Server denied transfer. Exiting.");
+    Environment.Exit(-2);
+}
+Console.WriteLine("Sending the file...");
+long totalBytesRead = 0;
+int chunkCount = 1;
+byte[] buffer = new byte[4096]; // 4KB buffer
+do
+{
+    bytesRead = await payloadStream.ReadAsync(buffer, 0, 4096); // Try to read 4KB
+    totalBytesRead += bytesRead;
+    await channel.WriteAsync(buffer, 0, bytesRead, CancellationToken.None);
+    Console.Write($"Chunk {chunkCount++} sent... ");
+    bytesRead = await channel.ReadAsync(ackMessageByte, CancellationToken.None);
+    if (bytesRead != 1)
+    {
+        throw new Exception("Incorrect amount of bytes read.");
+    }
+    ackMessage = BitConverter.IsLittleEndian ?
+    BitConverter.ToInt32([ackMessageByte[0], 0, 0, 0]) :
+    BitConverter.ToInt32([0, 0, 0, ackMessageByte[0]]);
+    if (ackMessage == 0)
+    {
+        Console.Error.WriteLine($"Server encountered error. Exiting.");
+        Environment.Exit(-3);
+    }
+    Console.WriteLine("Acknowledgement complete.");
+} while (totalBytesRead < payloadStream.Length);
+Console.WriteLine("Transfer complete.");
 tcpClient.Dispose(); // Close the connection
 
 (IPAddress, int, string) ParseAndValidateCommandLineArguments()
