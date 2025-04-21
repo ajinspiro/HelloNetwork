@@ -1,5 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Text;
+using System.Text.Json;
 
 Console.Write("CLIENT\n\n");
 var (serverIP, serverPort, payloadFilePath) = ParseAndValidateCommandLineArguments();
@@ -8,9 +10,26 @@ await Task.Delay(1000); // Wait till the server starts.
 TcpClient tcpClient = new();
 await tcpClient.ConnectAsync(serverIP, serverPort);
 using NetworkStream channel = tcpClient.GetStream();
-using BinaryWriter channelWriter = new(channel); // Using BinaryWriter.Write for simplicity. This is old synchronous API. A modern alternative would be to call the low level Stream(here NetworkStream).ReadAsync directly.
-byte[] imageBytes = GetImageAsBytes();
-channelWriter.Write(imageBytes);
+using FileStream payloadStream = new(payloadFilePath, FileMode.Open, FileAccess.Read);
+var metadataObject = new
+{
+    FileName = Path.GetFileName(payloadFilePath),
+    FileSize = payloadFilePath.Length
+};
+var metadataJSONString = JsonSerializer.Serialize(metadataObject);
+var metadataBytes = Encoding.BigEndianUnicode.GetBytes(metadataJSONString); // Network byte order is Big-endian.
+byte[] metadataLengthBytes;
+if (BitConverter.IsLittleEndian)
+{
+    metadataLengthBytes = BitConverter.GetBytes(metadataBytes.Length);
+}
+else
+{
+    metadataLengthBytes = BitConverter.GetBytes(metadataBytes.Length).Reverse().ToArray();
+}
+await channel.WriteAsync(metadataLengthBytes, CancellationToken.None); // Using the modern low level Stream.WriteAsync instead of BinaryWriter
+await channel.WriteAsync(metadataBytes);
+
 Console.WriteLine("Sending file IMAGE.jpg complete.");
 tcpClient.Dispose(); // Close the connection
 
@@ -39,15 +58,9 @@ tcpClient.Dispose(); // Close the connection
     return (ipAddress!, port, args[2]);
 }
 
-//static (int metadataLength, string metadata, byte[] fileBytes) PreparePayload()
-//{
-//    Path.GetRelativePath(args)
-//}
-
-static byte[] GetImageAsBytes()
+static byte[] GetImageAsBytes(string payloadFilePath)
 {
-    string imagePath = "./IMAGE.jpg";
-    using FileStream imageStream = new(imagePath, FileMode.Open, FileAccess.Read);
+    using FileStream imageStream = new(payloadFilePath, FileMode.Open, FileAccess.Read);
     BinaryReader imageReader = new(imageStream);
     Console.WriteLine(imageStream.Length);
     if (imageStream.Length > int.MaxValue)
