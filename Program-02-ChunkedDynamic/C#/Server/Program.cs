@@ -57,6 +57,7 @@ static async Task ProcessClient(TcpClient connectedClient)
 
         byte message = (byte)(availableFreeSpace <= payloadSize ? 0 : 1); // "Denied" or "Proceed"
         await channel.WriteAsync(new byte[1] { message });
+        Console.WriteLine($"SENDING ACKNOWLEDGEMENT: {message} {(message == 1 ? "Proceed" : "Denied")}");
         if (availableFreeSpace <= payloadSize)
         {
             return;

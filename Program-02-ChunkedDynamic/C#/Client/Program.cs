@@ -31,8 +31,22 @@ await channel.WriteAsync(metadataLengthBytes, CancellationToken.None); // Using 
 Console.WriteLine($"METADATA LENGTH SENT: {metadataBytes.Length}");
 await channel.WriteAsync(metadataBytes, CancellationToken.None);
 Console.WriteLine($"METADATA SENT: {metadataJSONString}");
-Console.WriteLine("Sending Metadata complete.");
+Console.WriteLine("Sending Metadata complete. Waiting for acknowledgement message from server.");
+byte[] ackMessageByte = new byte[1];
+int bytesRead = await channel.ReadAsync(ackMessageByte, CancellationToken.None);
+if (bytesRead != 1)
+{
+    throw new Exception("Incorrect amount of bytes read.");
+}
+int ackMessage = BitConverter.IsLittleEndian ? 
+    BitConverter.ToInt32([ackMessageByte[0], 0, 0, 0]) : 
+    BitConverter.ToInt32([0, 0, 0, ackMessageByte[0]]);
 
+if (ackMessage != 0 && ackMessage != 1)
+{
+    throw new Exception($"Server sent invalid acknowledgement: {ackMessage}");
+}
+Console.WriteLine($"ACKNOWLEDGEMENT RECEIVED: {ackMessage} - {(ackMessage == 1 ? "Proceed" : "Denied")}");
 ////////////
 //using FileStream imageStream = new(payloadFilePath, FileMode.Open, FileAccess.Read);
 //BinaryReader imageReader = new(imageStream);
