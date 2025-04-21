@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Client": {
+      "commandName": "Project",
+      "commandLineArgs": "127.0.0.1 11000 C:\\monorepo\\projects\\HelloNetwork\\StaticAssets\\IMAGE.jpg"
+    }
+  }
+}

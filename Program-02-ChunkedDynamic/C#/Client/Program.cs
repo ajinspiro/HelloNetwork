@@ -14,23 +14,36 @@ using FileStream payloadStream = new(payloadFilePath, FileMode.Open, FileAccess.
 var metadataObject = new
 {
     FileName = Path.GetFileName(payloadFilePath),
-    FileSize = payloadFilePath.Length
+    FileSize = payloadStream.Length
 };
-var metadataJSONString = JsonSerializer.Serialize(metadataObject);
-var metadataBytes = Encoding.BigEndianUnicode.GetBytes(metadataJSONString); // Network byte order is Big-endian.
+string metadataJSONString = JsonSerializer.Serialize(metadataObject);
+var metadataBytes = Encoding.UTF8.GetBytes(metadataJSONString); // UTF-8 has no endianness.
 byte[] metadataLengthBytes;
 if (BitConverter.IsLittleEndian)
 {
-    metadataLengthBytes = BitConverter.GetBytes(metadataBytes.Length);
+    metadataLengthBytes = BitConverter.GetBytes(metadataBytes.Length).Reverse().ToArray(); // Network byte order is Big-endian. So, we need to convert from little-endian to big-endian.
 }
 else
 {
-    metadataLengthBytes = BitConverter.GetBytes(metadataBytes.Length).Reverse().ToArray();
+    metadataLengthBytes = BitConverter.GetBytes(metadataBytes.Length);
 }
-await channel.WriteAsync(metadataLengthBytes, CancellationToken.None); // Using the modern low level Stream.WriteAsync instead of BinaryWriter
-await channel.WriteAsync(metadataBytes);
+await channel.WriteAsync(metadataLengthBytes, CancellationToken.None); // Using the more modern low level Stream.WriteAsync instead of BinaryWriter
+Console.WriteLine($"METADATA LENGTH SENT: {metadataBytes.Length}");
+await channel.WriteAsync(metadataBytes, CancellationToken.None);
+Console.WriteLine($"METADATA SENT: {metadataJSONString}");
+Console.WriteLine("Sending Metadata complete.");
 
-Console.WriteLine("Sending file IMAGE.jpg complete.");
+////////////
+//using FileStream imageStream = new(payloadFilePath, FileMode.Open, FileAccess.Read);
+//BinaryReader imageReader = new(imageStream);
+//Console.WriteLine(imageStream.Length);
+//if (imageStream.Length > int.MaxValue)
+//{
+//    throw new Exception("Can't send files larger than 2GB (int.MaxValue) in this version.");
+//}
+//imageReader.ReadBytes((int)imageStream.Length);
+////////////
+
 tcpClient.Dispose(); // Close the connection
 
 (IPAddress, int, string) ParseAndValidateCommandLineArguments()
@@ -56,16 +69,4 @@ tcpClient.Dispose(); // Close the connection
     }
 
     return (ipAddress!, port, args[2]);
-}
-
-static byte[] GetImageAsBytes(string payloadFilePath)
-{
-    using FileStream imageStream = new(payloadFilePath, FileMode.Open, FileAccess.Read);
-    BinaryReader imageReader = new(imageStream);
-    Console.WriteLine(imageStream.Length);
-    if (imageStream.Length > int.MaxValue)
-    {
-        throw new Exception("Can't send files larger than 2GB (int.MaxValue) in this version.");
-    }
-    return imageReader.ReadBytes((int)imageStream.Length);
 }
