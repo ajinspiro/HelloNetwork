@@ -1,6 +1,7 @@
 ﻿using ProtocolAssets;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.Json;
 
 Console.Write("CLIENT\n\n");
 var (serverIP, serverPort, payloadFilePath) = ParseAndValidateCommandLineArguments();
@@ -11,11 +12,14 @@ await tcpClient.ConnectAsync(serverIP, serverPort);
 using NetworkStream channel = tcpClient.GetStream();
 using FileStream payloadStream = new(payloadFilePath, FileMode.Open, FileAccess.Read);
 
-PDUConverter pduConverter = new();
-
-byte[] connectPDU = pduConverter.Serialize(new PDU.Connect());
+PDUSerializer pduSerializer = new();
+PDUDeserializer pduDeserializer = new();
+byte[] connectPDU = pduSerializer.Serialize(new PDU.Connect());
+Console.Write("Sending CONNECT...");
 await channel.WriteAsync(connectPDU);
-
+Console.WriteLine("Complete");
+PDU.Proceed proceedPDU = await pduDeserializer.DeserializeProceed(channel);
+Console.WriteLine($"PROCEED received. {JsonSerializer.Serialize(proceedPDU)} \nSending METADATA...");
 Console.WriteLine("Transfer complete.");
 tcpClient.Dispose(); // Close the connection
 

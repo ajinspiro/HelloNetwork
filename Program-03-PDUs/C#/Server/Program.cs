@@ -7,22 +7,27 @@ using System.Text.Json;
 Console.Write("SERVER\n\n");
 var (serverIP, serverPort) = ParseAndValidateCommandLineArguments();
 
-PDUConverter pduConverter = new();
+PDUSerializer pduSerializer = new();
+PDUDeserializer pduDeserializer = new();
 using TcpListener tcpListener = new(serverIP, serverPort);
 tcpListener.Start();
 while (true)
 {
     TcpClient connectedClient = await tcpListener.AcceptTcpClientAsync();
-    _ = Task.Run(() => ProcessClient(connectedClient, pduConverter));
+    _ = Task.Run(() => ProcessClient(connectedClient, pduSerializer, pduDeserializer));
 }
 
-static async Task ProcessClient(TcpClient connectedClient, PDUConverter pduConverter)
+static async Task ProcessClient(TcpClient connectedClient, PDUSerializer pduSerializer, PDUDeserializer pduDeserializer)
 {
     try
     {
         using NetworkStream channel = connectedClient.GetStream();
-        PDU.Connect connectPdu = await pduConverter.DeserializeConnect(channel);
-        Console.WriteLine(JsonSerializer.Serialize(connectPdu));
+        PDU.Connect connectPdu = await pduDeserializer.DeserializeConnect(channel);
+        Console.Write("CONNECT received.\nSending PROCEED...");
+        byte[] proceedPduBytes = pduSerializer.Serialize(new PDU.Proceed());
+        await channel.WriteAsync(proceedPduBytes, 0, proceedPduBytes.Length);
+        Console.WriteLine("Complete");
+        Console.WriteLine("Transfer complete.");
     }
     catch (Exception ex)
     {
