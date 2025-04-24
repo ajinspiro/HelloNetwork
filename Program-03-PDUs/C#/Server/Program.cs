@@ -23,10 +23,12 @@ static async Task ProcessClient(TcpClient connectedClient, PDUSerializer pduSeri
     {
         using NetworkStream channel = connectedClient.GetStream();
         PDU.Connect connectPdu = await pduDeserializer.DeserializeConnect(channel);
-        Console.Write("CONNECT received.\nSending PROCEED...");
-        byte[] proceedPduBytes = pduSerializer.Serialize(new PDU.Proceed());
-        await channel.WriteAsync(proceedPduBytes, 0, proceedPduBytes.Length);
+        Console.Write("CONNECT received.\nSending RESPONSE(OK)...");
+        byte[] responsePduBytes = pduSerializer.Serialize(new PDU.Response(PDU.Response.ResponseType.Okay));
+        await channel.WriteAsync(responsePduBytes, 0, responsePduBytes.Length);
         Console.WriteLine("Complete");
+        PDU.Metadata metadataPDU = await pduDeserializer.DeserializeMetadata(channel);
+        Console.WriteLine($"METADATA received. {JsonSerializer.Serialize(metadataPDU)}");
         Console.WriteLine("Transfer complete.");
     }
     catch (Exception ex)

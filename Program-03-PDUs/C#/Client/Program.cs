@@ -14,12 +14,22 @@ using FileStream payloadStream = new(payloadFilePath, FileMode.Open, FileAccess.
 
 PDUSerializer pduSerializer = new();
 PDUDeserializer pduDeserializer = new();
-byte[] connectPDU = pduSerializer.Serialize(new PDU.Connect());
+byte[] connectPDUBytes = pduSerializer.Serialize(new PDU.Connect());
 Console.Write("Sending CONNECT...");
-await channel.WriteAsync(connectPDU);
+await channel.WriteAsync(connectPDUBytes);
 Console.WriteLine("Complete");
-PDU.Proceed proceedPDU = await pduDeserializer.DeserializeProceed(channel);
-Console.WriteLine($"PROCEED received. {JsonSerializer.Serialize(proceedPDU)} \nSending METADATA...");
+PDU.Response responsePDU = await pduDeserializer.DeserializeResponse(channel);
+Console.WriteLine($"RESPONSE({responsePDU.Message}) received. ");
+if (responsePDU.Message == "ER")
+{
+    Console.WriteLine($"Exiting because of server error.");
+    Environment.Exit(-1);
+}
+Console.Write("Sending METADATA...");
+PDU.Metadata metadataPDU = new(payloadStream.Length, Path.GetFileName(payloadFilePath));
+byte[] metadataPDUBytes = pduSerializer.Serialize(metadataPDU);
+await channel.WriteAsync(metadataPDUBytes);
+Console.WriteLine("Complete");
 Console.WriteLine("Transfer complete.");
 tcpClient.Dispose(); // Close the connection
 
