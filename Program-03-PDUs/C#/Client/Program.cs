@@ -30,6 +30,14 @@ PDU.Metadata metadataPDU = new(payloadStream.Length, Path.GetFileName(payloadFil
 byte[] metadataPDUBytes = pduSerializer.Serialize(metadataPDU);
 await channel.WriteAsync(metadataPDUBytes);
 Console.WriteLine("Complete");
+responsePDU = await pduDeserializer.DeserializeResponse(channel);
+Console.WriteLine($"RESPONSE({responsePDU.Message}) received. ");
+if (responsePDU.Message == "ER")
+{
+    Console.WriteLine($"Exiting because of server error.");
+    Environment.Exit(-1);
+}
+
 Console.WriteLine("Transfer complete.");
 tcpClient.Dispose(); // Close the connection
 

@@ -29,6 +29,24 @@ static async Task ProcessClient(TcpClient connectedClient, PDUSerializer pduSeri
         Console.WriteLine("Complete");
         PDU.Metadata metadataPDU = await pduDeserializer.DeserializeMetadata(channel);
         Console.WriteLine($"METADATA received. {JsonSerializer.Serialize(metadataPDU)}");
+        long availableFreeSpace = DriveInfo
+            .GetDrives()
+            .First(drive =>
+                AppContext.BaseDirectory.StartsWith(drive.Name, StringComparison.OrdinalIgnoreCase)
+                )
+            .AvailableFreeSpace;
+        var responseType = (availableFreeSpace <= metadataPDU.FileSize) ? PDU.Response.ResponseType.Error : PDU.Response.ResponseType.Okay;
+        PDU.Response metadataResponse = new(responseType);
+        Console.Write($"Sending RESPONSE({metadataResponse.Message})...");
+        await channel.WriteAsync(pduSerializer.Serialize(metadataResponse));
+        Console.WriteLine("Complete");
+        if (availableFreeSpace <= metadataPDU.FileSize)
+        {
+            Console.WriteLine("There is not enough space to receive the data from client. Exiting.");
+            return;
+        }
+
+
         Console.WriteLine("Transfer complete.");
     }
     catch (Exception ex)
