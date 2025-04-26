@@ -45,8 +45,23 @@ static async Task ProcessClient(TcpClient connectedClient, PDUSerializer pduSeri
             Console.WriteLine("There is not enough space to receive the data from client. Exiting.");
             return;
         }
-
-
+        int totalBytesRead = 0;
+        using MemoryStream payloadBuffer = new(metadataPDU.FileSize > int.MaxValue ? int.MaxValue : (int)metadataPDU.FileSize);
+        short packetNumber = 1;
+        do
+        {
+            PDU.Data dataPDU = await pduDeserializer.DeserializeData(channel);
+            Console.WriteLine($"DATA(Packet number={packetNumber++}) received.");
+            Console.Write($"Sending RESPONSE(OK)...");
+            await channel.WriteAsync(responsePduBytes);
+            Console.WriteLine("Completed");
+            totalBytesRead += dataPDU.PayloadSize;
+            await payloadBuffer.WriteAsync(dataPDU.Payload);
+        } while (totalBytesRead < metadataPDU.FileSize);
+        using FileStream payloadStream = new(metadataPDU.FileName, FileMode.Create);
+        payloadBuffer.Seek(0, SeekOrigin.Begin);
+        await payloadBuffer.CopyToAsync(payloadStream);
+        await payloadStream.FlushAsync();
         Console.WriteLine("Transfer complete.");
     }
     catch (Exception ex)

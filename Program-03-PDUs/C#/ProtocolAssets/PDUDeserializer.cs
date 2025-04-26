@@ -89,4 +89,34 @@ public class PDUDeserializer
         PDU.Metadata metadataPdu = new(fileSize, fileName);
         return metadataPdu;
     }
+    public async Task<PDU.Data> DeserializeData(Stream stream)
+    {
+        byte[] buffer = new byte[1];
+        int bytesRead = await stream.ReadAsync(buffer);
+        if (bytesRead != 1)
+        {
+            throw new Exception("Incorrect amount of bytes read.");
+        }
+        if (buffer[0] != 4)
+        {
+            throw new Exception($"Failed to deserialize DATA. Type value was {buffer[0]} instead of 4");
+        }
+
+        byte[] payloadSizeBytes = new byte[sizeof(int)];
+        bytesRead = await stream.ReadAsync(payloadSizeBytes);
+        if (BitConverter.IsLittleEndian)
+        {
+            payloadSizeBytes = payloadSizeBytes.Reverse().ToArray();
+        }
+        if (bytesRead != sizeof(int))
+        {
+            throw new Exception("Incorrect amount of bytes read.");
+        }
+        int payloadSize = BitConverter.ToInt32(payloadSizeBytes);
+
+        buffer = new byte[payloadSize];
+        bytesRead = await stream.ReadAsync(buffer);
+        PDU.Data dataPdu = new(buffer);
+        return dataPdu;
+    }
 }

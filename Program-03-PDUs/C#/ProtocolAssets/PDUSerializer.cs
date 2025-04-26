@@ -51,4 +51,21 @@ public class PDUSerializer
 
         return pduBytes;
     }
+    public byte[] Serialize(PDU.Data data)
+    {
+        byte[] pduBytes = new byte[1 + sizeof(int) + data.PayloadSize]; // type, payloadSize, and payload itself
+        int totalBytesWritten = 0;
+        pduBytes[0] = data.Type;
+        totalBytesWritten++;
+        byte[] payloadSizeBytes = BitConverter.GetBytes(data.PayloadSize);
+        if (BitConverter.IsLittleEndian)
+        {
+            payloadSizeBytes = payloadSizeBytes.Reverse().ToArray();
+        }
+        Buffer.BlockCopy(payloadSizeBytes, 0, pduBytes, totalBytesWritten, payloadSizeBytes.Length);
+        totalBytesWritten += payloadSizeBytes.Length;
+        Buffer.BlockCopy(data.Payload, 0, pduBytes, totalBytesWritten, data.PayloadSize);
+        // totalBytesWritten += data.PayloadSize; This line is commented because the value is never used.
+        return pduBytes;
+    }
 }

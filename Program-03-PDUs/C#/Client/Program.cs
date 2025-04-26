@@ -1,7 +1,6 @@
 ﻿using ProtocolAssets;
 using System.Net;
 using System.Net.Sockets;
-using System.Text.Json;
 
 Console.Write("CLIENT\n\n");
 var (serverIP, serverPort, payloadFilePath) = ParseAndValidateCommandLineArguments();
@@ -37,6 +36,23 @@ if (responsePDU.Message == "ER")
     Console.WriteLine($"Exiting because of server error.");
     Environment.Exit(-1);
 }
+// Sending the file
+int totalBytesRead = 0;
+byte[] buffer = new byte[4096];
+short packetNumber = 1;
+do
+{
+    int bytesRead = await payloadStream.ReadAsync(buffer, 0, 4096);
+    totalBytesRead += bytesRead;
+    PDU.Data dataPDU = new(new Span<byte>(buffer, 0, bytesRead).ToArray());
+    byte[] dataPDUBytes = pduSerializer.Serialize(dataPDU);
+    Console.Write($"Sending DATA(Packet number={packetNumber++})...");
+    await channel.WriteAsync(dataPDUBytes);
+    Console.WriteLine("Complete");
+    responsePDU = await pduDeserializer.DeserializeResponse(channel);
+    Console.WriteLine($"RESPONSE({responsePDU.Message}) received. ");
+} while (totalBytesRead < payloadStream.Length);
+
 
 Console.WriteLine("Transfer complete.");
 tcpClient.Dispose(); // Close the connection
